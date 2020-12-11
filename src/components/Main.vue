@@ -43,7 +43,7 @@
           </div>
           <div>三字母韵母，零声母 + 韵母所在键，如： 昂＝ah</div>
         </div>
-        <a-divider  />
+        <a-divider />
         <div style="text-align: center">
           <a href="https://cn.vuejs.org/" target="_blank"> vue </a>
           <a-divider type="vertical" />
@@ -71,8 +71,11 @@
 <script>
 const pinyinUtil = require("pinyin");
 import pinyinMap from "@/assets/pinyin.json";
-// style="display:grid;grid-template-rows: auto 1fr;"
+import vueKeyboard from "./vue-keyboard";
 export default {
+  components: {
+    vueKeyboard: vueKeyboard,
+  },
   data() {
     return {
       word: "加载中",
@@ -97,6 +100,11 @@ export default {
         heteronym: true,
         style: pinyinUtil.STYLE_NORMAL,
       })[0];
+    },
+  },
+  watch: {
+    handKey: function (val, oldVal) {
+      console.log("new: %s, old: %s", val, oldVal);
     },
   },
   methods: {
@@ -181,7 +189,10 @@ export default {
     // 展示声母的手
     showSmHand() {
       // 隐藏当前手
-      this.$refs.keyBoard.hideHand(this.handKey);
+      if (this.handKey !== "") {
+        console.log(this.handKey);
+        this.$refs.keyBoard.hideHand(this.handKey);
+      }
       const keys = Object.keys(pinyinMap);
       for (let key of keys) {
         // 获得数组
@@ -200,7 +211,10 @@ export default {
     showYmHand() {
       // 隐藏当前手
       const sm = this.getTextSm();
-      this.$refs.keyBoard.hideHand(this.handKey);
+      if (this.handKey !== "") {
+        console.log(this.handKey);
+        this.$refs.keyBoard.hideHand(this.handKey);
+      }
       const keys = Object.keys(pinyinMap);
       for (let key of keys) {
         // 获得数组
