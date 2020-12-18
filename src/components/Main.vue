@@ -24,24 +24,32 @@
             {{ aimPinyin }}
           </div>
           <div>
+            <a-select v-model="inputMethod">
+              <a-select-option v-for="item of inputMethods" :key="item.key" :value="item.key">{{item.name}}</a-select-option>
+            </a-select>
             <a-input
               ref="input"
               style="width: 20vh"
               placeholder="输入对应的拼音按键"
               @pressEnter="commit"
-              v-model="inputValue"
+              v-model.trim="inputValue"
               @change="inputChange"
             />
           </div>
         </div>
-        <vue-keyboard ref="keyBoard" :width="keyBoardWidth"></vue-keyboard>
+        <vue-keyboard ref="keyBoard" :width="keyBoardWidth" :keyboardData="keyboardData"></vue-keyboard>
         <div style="font-size: 14px">
-          <div>单字母韵母，零声母 + 韵母所在键，如： 啊＝aa 哦=oo 额=ee</div>
-          <div>
-            双字母韵母，零声母 + 韵母末字母（表现形式同全拼），如： 爱＝ai 恩=en
-            欧=ou 三字母韵母，零声母 + 韵母所在键，如： 昂＝ah
-          </div>
-          <div>三字母韵母，零声母 + 韵母所在键，如： 昂＝ah</div>
+          <template v-if="inputMethod === 'mircosoft'">
+            <div>纯韵母，o + 韵母所在键，如： 啊＝oa 哦=oo 额=oe 爱=ol 恩=of 欧=ob 昂=oh</div>
+          </template>
+          <template v-else>
+            <div>单字母韵母，零声母 + 韵母所在键，如： 啊＝aa 哦=oo 额=ee</div>
+            <div>
+              双字母韵母，零声母 + 韵母末字母（表现形式同全拼），如： 爱＝ai 恩=en
+              欧=ou 三字母韵母，零声母 + 韵母所在键，如： 昂＝ah
+            </div>
+            <div>三字母韵母，零声母 + 韵母所在键，如： 昂＝ah</div>
+          </template>
         </div>
         <a-divider />
         <div style="text-align: center">
@@ -70,13 +78,30 @@
 
 <script>
 const pinyinUtil = require("pinyin");
-import pinyinMap from "@/assets/pinyin.json";
+import xiaohePinyinMap from "@/assets/pinyin.json";
+import mircosoftPinyinMap from '@/assets/mircosoft-pinyin.json';
+import xiaoheKeyboard from "@/assets/keyboard-ansi.svg";
+import mircoSoftKeyboard from "@/assets/mircosoft-keyboard-ansi.svg";
 import vueKeyboard from "./vue-keyboard";
 export default {
   components: {
     vueKeyboard: vueKeyboard,
   },
   data() {
+    const inputMethods = [
+      {
+        key: 'xiaohe',
+        name: '小鹤双拼',
+        map: xiaohePinyinMap,
+        keyboard: xiaoheKeyboard,
+      },
+      {
+        key: 'mircosoft',
+        name: '微软双拼',
+        map: mircosoftPinyinMap,
+        keyboard: mircoSoftKeyboard,
+      },
+    ]
     return {
       word: "加载中",
       wordFrom: "...",
@@ -89,6 +114,8 @@ export default {
       inputValue: "",
       keyBoardWidth: 600,
       handKey: "",
+      inputMethod: inputMethods[0]?.key,
+      inputMethods
     };
   },
   computed: {
@@ -101,6 +128,15 @@ export default {
         style: pinyinUtil.STYLE_NORMAL,
       })[0];
     },
+    currentInputMethod() {
+      return this.inputMethods.find(({ key }) => key === this.inputMethod);
+    },
+    pinyinMap() {
+      return this.currentInputMethod.map;
+    },
+    keyboardData() {
+      return this.currentInputMethod.keyboard;
+    }
   },
   watch: {
     handKey: function (val, oldVal) {
@@ -160,7 +196,15 @@ export default {
       // 检查声母
       const sm = this.inputValue[0];
       let smFlag = false;
-      outer: for (const item of pinyinMap[sm]) {
+      // 如果是微软双拼 且 目标拼音是 a e o ai ei等韵母, 则声母需要输入o
+      console.log(this.inputMethod, this.aimPinyin)
+      if (
+        this.inputMethod === 'mircosoft' &&
+        ['e', 'er', 'o', 'a', 'en', 'eng', 'ang', 'an', 'ao', 'ai', 'ei', 'ou'].findIndex(value => this.aimPinyin.findIndex(val => val === value) !== -1) !== -1
+      ) {
+        return sm === 'o'
+      }
+      outer: for (const item of this.pinyinMap[sm]) {
         for (const pinyin of this.aimPinyin) {
           if (pinyin.startsWith(item)) {
             // 匹配成功
@@ -175,7 +219,7 @@ export default {
       // 检查韵母
       const ym = this.inputValue[1];
       let ymFlag = false;
-      outer: for (const item of pinyinMap[ym]) {
+      outer: for (const item of this.pinyinMap[ym]) {
         for (const pinyin of this.aimPinyin) {
           if (pinyin.endsWith(item)) {
             // 匹配成功
@@ -193,10 +237,10 @@ export default {
         console.log(this.handKey);
         this.$refs.keyBoard.hideHand(this.handKey);
       }
-      const keys = Object.keys(pinyinMap);
+      const keys = Object.keys(this.pinyinMap);
       for (let key of keys) {
         // 获得数组
-        let valueArr = pinyinMap[key];
+        let valueArr = this.pinyinMap[key];
         // 如果第一个字的拼音以该value开头 数组第0位 为声母
         let value = valueArr[0];
         // 声母匹配上则显示手
@@ -215,10 +259,10 @@ export default {
         console.log(this.handKey);
         this.$refs.keyBoard.hideHand(this.handKey);
       }
-      const keys = Object.keys(pinyinMap);
+      const keys = Object.keys(this.pinyinMap);
       for (let key of keys) {
         // 获得数组
-        let valueArr = pinyinMap[key];
+        let valueArr = this.pinyinMap[key];
         for (let value of valueArr) {
           if (this.aimPinyin[0].replace(sm, "") == value) {
             this.handKey = key;
@@ -230,10 +274,10 @@ export default {
     },
     // 获取一个字的声母
     getTextSm() {
-      const keys = Object.keys(pinyinMap);
+      const keys = Object.keys(this.pinyinMap);
       for (let key of keys) {
         // 获得数组
-        let valueArr = pinyinMap[key];
+        let valueArr = this.pinyinMap[key];
         for (let value of valueArr) {
           if (this.aimPinyin[0].startsWith(value)) {
             return value;

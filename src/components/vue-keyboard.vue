@@ -44,7 +44,6 @@
 
 
 <script>
-import keyboard from "@/assets/keyboard-ansi.svg";
 import hand from "@/assets/hand-both.svg";
 let strokeColor = "#02a8de";
 let originalColor = "#777777";
@@ -53,11 +52,10 @@ export default {
   name: "vueKeyboard",
   data() {
     return {
-      keyboardData: keyboard,
       handData: hand,
     };
   },
-  props: ["width"],
+  props: ["width", "keyboardData"],
   computed: {
     scale() {
       return this.width ? this.width / 1031 : 1;
