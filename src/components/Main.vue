@@ -25,7 +25,12 @@
           </div>
           <div>
             <a-select v-model="inputMethod">
-              <a-select-option v-for="item of inputMethods" :key="item.key" :value="item.key">{{item.name}}</a-select-option>
+              <a-select-option
+                v-for="item of inputMethods"
+                :key="item.key"
+                :value="item.key"
+                >{{ item.name }}</a-select-option
+              >
             </a-select>
             <a-input
               ref="input"
@@ -37,16 +42,23 @@
             />
           </div>
         </div>
-        <vue-keyboard ref="keyBoard" :width="keyBoardWidth" :keyboardData="keyboardData"></vue-keyboard>
+        <vue-keyboard
+          ref="keyBoard"
+          :width="keyBoardWidth"
+          :keyboardData="keyboardData"
+        ></vue-keyboard>
         <div style="font-size: 14px">
           <template v-if="inputMethod === 'mircosoft'">
-            <div>纯韵母，o + 韵母所在键，如： 啊＝oa 哦=oo 额=oe 爱=ol 恩=of 欧=ob 昂=oh</div>
+            <div>
+              纯韵母，o + 韵母所在键，如： 啊＝oa 哦=oo 额=oe 爱=ol 恩=of 欧=ob
+              昂=oh
+            </div>
           </template>
           <template v-else>
             <div>单字母韵母，零声母 + 韵母所在键，如： 啊＝aa 哦=oo 额=ee</div>
             <div>
-              双字母韵母，零声母 + 韵母末字母（表现形式同全拼），如： 爱＝ai 恩=en
-              欧=ou 三字母韵母，零声母 + 韵母所在键，如： 昂＝ah
+              双字母韵母，零声母 + 韵母末字母（表现形式同全拼），如： 爱＝ai
+              恩=en 欧=ou 三字母韵母，零声母 + 韵母所在键，如： 昂＝ah
             </div>
             <div>三字母韵母，零声母 + 韵母所在键，如： 昂＝ah</div>
           </template>
@@ -79,9 +91,11 @@
 <script>
 const pinyinUtil = require("pinyin");
 import xiaohePinyinMap from "@/assets/pinyin.json";
-import mircosoftPinyinMap from '@/assets/mircosoft-pinyin.json';
+import mircosoftPinyinMap from "@/assets/mircosoft-pinyin.json";
+import naturalCodeMap from "@/assets/naturalCode-pinyin.json";
 import xiaoheKeyboard from "@/assets/keyboard-ansi.svg";
 import mircoSoftKeyboard from "@/assets/mircosoft-keyboard-ansi.svg";
+import naturalCodeKeyboard from "@/assets/naturalCode-keyboard.svg";
 import vueKeyboard from "./vue-keyboard";
 export default {
   components: {
@@ -90,18 +104,24 @@ export default {
   data() {
     const inputMethods = [
       {
-        key: 'xiaohe',
-        name: '小鹤双拼',
+        key: "xiaohe",
+        name: "小鹤双拼",
         map: xiaohePinyinMap,
         keyboard: xiaoheKeyboard,
       },
       {
-        key: 'mircosoft',
-        name: '微软双拼',
+        key: "mircosoft",
+        name: "微软双拼",
         map: mircosoftPinyinMap,
         keyboard: mircoSoftKeyboard,
       },
-    ]
+      {
+        key: "naturalCode",
+        name: "自然码",
+        map: naturalCodeMap,
+        keyboard: naturalCodeKeyboard,
+      },
+    ];
     return {
       word: "加载中",
       wordFrom: "...",
@@ -115,7 +135,7 @@ export default {
       keyBoardWidth: 600,
       handKey: "",
       inputMethod: inputMethods[0]?.key,
-      inputMethods
+      inputMethods,
     };
   },
   computed: {
@@ -136,7 +156,7 @@ export default {
     },
     keyboardData() {
       return this.currentInputMethod.keyboard;
-    }
+    },
   },
   watch: {
     handKey: function (val, oldVal) {
@@ -147,6 +167,7 @@ export default {
     getWord() {
       this.$axios.get("https://v1.hitokoto.cn/").then((res) => {
         this.word = res.data.hitokoto;
+        // this.word = "旅女昂安唉嗯鞥偶哦啊";
         this.wordFrom = res.data.from;
         this.wordCreator = res.data.creator;
         this.wordIndex = 0;
@@ -197,12 +218,47 @@ export default {
       const sm = this.inputValue[0];
       let smFlag = false;
       // 如果是微软双拼 且 目标拼音是 a e o ai ei等韵母, 则声母需要输入o
-      console.log(this.inputMethod, this.aimPinyin)
+      console.log(this.inputMethod, this.aimPinyin);
       if (
-        this.inputMethod === 'mircosoft' &&
-        ['e', 'er', 'o', 'a', 'en', 'eng', 'ang', 'an', 'ao', 'ai', 'ei', 'ou'].findIndex(value => this.aimPinyin.findIndex(val => val === value) !== -1) !== -1
+        this.inputMethod === "mircosoft" &&
+        [
+          "e",
+          "er",
+          "o",
+          "a",
+          "en",
+          "eng",
+          "ang",
+          "an",
+          "ao",
+          "ai",
+          "ei",
+          "ou",
+        ].findIndex(
+          (value) => this.aimPinyin.findIndex((val) => val === value) !== -1
+        ) !== -1
       ) {
-        return sm === 'o'
+        return sm === "o";
+      } else if (this.inputMethod === "naturalCode") {
+        if (
+          ["e", "er", "en", "eng", "ei"].findIndex(
+            (value) => this.aimPinyin.findIndex((val) => val === value) !== -1
+          ) !== -1
+        ) {
+          return sm === "e";
+        } else if (
+          ["a", "ang", "an", "ao", "ai"].findIndex(
+            (value) => this.aimPinyin.findIndex((val) => val === value) !== -1
+          ) !== -1
+        ) {
+          return sm === "a";
+        } else if (
+          ["o", "ou"].findIndex(
+            (value) => this.aimPinyin.findIndex((val) => val === value) !== -1
+          ) !== -1
+        ) {
+          return sm === "o";
+        }
       }
       outer: for (const item of this.pinyinMap[sm]) {
         for (const pinyin of this.aimPinyin) {
