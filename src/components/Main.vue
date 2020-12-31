@@ -159,15 +159,15 @@ export default {
     },
   },
   watch: {
-    handKey: function (val, oldVal) {
-      console.log("new: %s, old: %s", val, oldVal);
-    },
+    // handKey: function (val, oldVal) {
+    //   console.log("new: %s, old: %s", val, oldVal);
+    // },
   },
   methods: {
     getWord() {
       this.$axios.get("https://v1.hitokoto.cn/").then((res) => {
         this.word = res.data.hitokoto;
-        // this.word = "旅女昂安唉嗯鞥偶哦啊";
+        // this.word = "只吃师";
         this.wordFrom = res.data.from;
         this.wordCreator = res.data.creator;
         this.wordIndex = 0;
@@ -218,7 +218,6 @@ export default {
       const sm = this.inputValue[0];
       let smFlag = false;
       // 如果是微软双拼 且 目标拼音是 a e o ai ei等韵母, 则声母需要输入o
-      console.log(this.inputMethod, this.aimPinyin);
       if (
         this.inputMethod === "mircosoft" &&
         [
@@ -290,17 +289,22 @@ export default {
     showSmHand() {
       // 隐藏当前手
       if (this.handKey !== "") {
-        console.log(this.handKey);
         this.$refs.keyBoard.hideHand(this.handKey);
       }
       const keys = Object.keys(this.pinyinMap);
       for (let key of keys) {
+        // key 按键
+        // value 声母
         // 获得数组
         let valueArr = this.pinyinMap[key];
         // 如果第一个字的拼音以该value开头 数组第0位 为声母
         let value = valueArr[0];
         // 声母匹配上则显示手
         if (this.aimPinyin[0].startsWith(value)) {
+          // 特殊处理z 与 zh
+          if (value === "z" && this.aimPinyin[0].startsWith("zh")) {
+            key = "v";
+          }
           this.handKey = key;
           this.$refs.keyBoard.showHand(key);
           return;
@@ -312,7 +316,6 @@ export default {
       // 隐藏当前手
       const sm = this.getTextSm();
       if (this.handKey !== "") {
-        console.log(this.handKey);
         this.$refs.keyBoard.hideHand(this.handKey);
       }
       const keys = Object.keys(this.pinyinMap);
@@ -336,6 +339,9 @@ export default {
         let valueArr = this.pinyinMap[key];
         for (let value of valueArr) {
           if (this.aimPinyin[0].startsWith(value)) {
+            if (value === "z" && this.aimPinyin[0][1] === "h") {
+              value = value + "h";
+            }
             return value;
           }
         }
