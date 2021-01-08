@@ -31,11 +31,11 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 12.x
+          
       - name: Build and Deploy
         uses: myth984/double-spell@main
         env:
           ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
           FOLDER: build
-          BUILD_SCRIPT: 
-            npm install 
-            npm run build
+          BRANCH: main
+          BUILD_SCRIPT: npm install && npm run build
