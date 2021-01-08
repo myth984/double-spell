@@ -32,10 +32,14 @@ jobs:
         with:
           node-version: 12.x
           
-      - name: Build and Deploy
-        uses: myth984/double-spell@main
-        env:
-          ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-          FOLDER: build
-          BRANCH: main
-          BUILD_SCRIPT: npm install && npm run build
+      - name: Install Packages
+        run: npm install
+        
+      - name: Build page
+        run: npm run build
+        
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          deploy_key: ${{ secrets.ACCESS_TOKEN }}
+          publish_dir: ./docs
