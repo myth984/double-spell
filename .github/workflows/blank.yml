@@ -40,6 +40,7 @@ jobs:
         
       - name: commit
         run: |
+          echo ${{ secrets.ACCESS_TOKEN }}
           git config --global user.email 1193322118@qq.com
           git config --global user.name autopush
           git add .
