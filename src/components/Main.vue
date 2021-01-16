@@ -237,26 +237,26 @@ export default {
           (value) => this.aimPinyin.findIndex((val) => val === value) !== -1
         ) !== -1
       ) {
-        return sm === "o";
+        smFlag = sm === "o";
       } else if (this.inputMethod === "naturalCode") {
         if (
           ["e", "er", "en", "eng", "ei"].findIndex(
             (value) => this.aimPinyin.findIndex((val) => val === value) !== -1
           ) !== -1
         ) {
-          return sm === "e";
+          smFlag = sm === "e";
         } else if (
           ["a", "ang", "an", "ao", "ai"].findIndex(
             (value) => this.aimPinyin.findIndex((val) => val === value) !== -1
           ) !== -1
         ) {
-          return sm === "a";
+          smFlag = sm === "a";
         } else if (
           ["o", "ou"].findIndex(
             (value) => this.aimPinyin.findIndex((val) => val === value) !== -1
           ) !== -1
         ) {
-          return sm === "o";
+          smFlag = sm === "o";
         }
       }
       outer: for (const item of this.pinyinMap[sm]) {
